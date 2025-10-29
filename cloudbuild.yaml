@@ -35,3 +35,6 @@ steps:
 
 images:
   - 'europe-west2-docker.pkg.dev/payslip-web-v1/payslip-web/payslip-web:${COMMIT_SHA}'
+# Only send build logs to Cloud Logging (not to other destinations)
+options:
+  logging: CLOUD_LOGGING_ONLY
