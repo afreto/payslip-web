@@ -1,24 +1,13 @@
-# Python virtual environments
-.venv
-env/
-venv/
-
-# Byte-compiled / cache
+.git
+.gitignore
 __pycache__/
 *.pyc
-
-# Git
-.git
-
-# Local env / credentials
+*.pyo
+*.pyd
+*.log
 .env
-credentials.env
-
-# Editor/temp
-*.swp
-*.swo
-*~
-
-# Node / build artifacts (if any)
-node_modules/
+.vscode/
+.idea/
 dist/
+build/
+node_modules/

@@ -1,8 +1,4 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-python-multipart==0.0.6
-playwright==1.40.0
-python-dateutil==2.8.2
-aiofiles==23.2.1
-gunicorn==20.1.0
+Flask==3.0.3
+gunicorn==22.0.0
+playwright==1.47.2
+python-dateutil==2.9.0.post0

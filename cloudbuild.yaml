@@ -1,62 +1,37 @@
-substitutions:
-  # Customize if you want, or leave as defaults
-  _REGION: europe-west2
-  _SERVICE: payslip-web
-  _REPO: payslip-web            # Artifact Registry repo name
-  _IMG_NAME: payslip-web        # image name (no tag)
-  _PROJECT_ID: payslip-web-v1
-  _SERVICE_ACCOUNT: 44689628415-compute@developer.gserviceaccount.com
+# Build & deploy to Cloud Run in europe-west2 (London)
+# Project: payslip-web-v1 (44689628415)
+# Service: payslip-web
 
-# Build → Push → Deploy
 steps:
-  - name: gcr.io/cloud-builders/docker
-    id: Build image
-    entrypoint: bash
-    args:
-      - -lc
-      - |
-        REPO="europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}"
-        if [ -n "${SHORT_SHA}" ]; then
-          echo "Building and tagging $${REPO}:${SHORT_SHA} and $${REPO}:${BUILD_ID}"
-          docker build -t "$${REPO}:${SHORT_SHA}" -t "$${REPO}:${BUILD_ID}" -f dockerfile .
-        else
-          echo "SHORT_SHA empty — building and tagging $${REPO}:${BUILD_ID}"
-          docker build -t "$${REPO}:${BUILD_ID}" -f dockerfile .
-        fi
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'europe-west2-docker.pkg.dev/payslip-web-v1/payslip-web/payslip-web:${COMMIT_SHA}', '.']
 
-  - name: gcr.io/cloud-builders/docker
-    id: Push image
-    entrypoint: bash
-    args:
-      - -lc
-      - |
-        REPO="europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}"
-        echo "Pushing $${REPO}:${BUILD_ID}"
-        docker push "$${REPO}:${BUILD_ID}"
-        if [ -n "${SHORT_SHA}" ]; then
-          echo "Pushing $${REPO}:${SHORT_SHA}"
-          docker push "$${REPO}:${SHORT_SHA}"
-        fi
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'europe-west2-docker.pkg.dev/payslip-web-v1/payslip-web/payslip-web:${COMMIT_SHA}']
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    id: Deploy to Cloud Run
-    entrypoint: bash
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: gcloud
     args:
-      - -lc
-      - |
-        REPO="europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}"
-        TAG="${SHORT_SHA:-${BUILD_ID}}"
-        echo "Deploying $${REPO}:$${TAG} to Cloud Run service ${_SERVICE} in ${_REGION}"
-        gcloud run deploy "${_SERVICE}" \
-          --image="$${REPO}:$${TAG}" \
-          --region="${_REGION}" \
-          --platform=managed \
-          --allow-unauthenticated \
-          --service-account="${_SERVICE_ACCOUNT}"
+      - 'run'
+      - 'deploy'
+      - 'payslip-web'
+      - '--image'
+      - 'europe-west2-docker.pkg.dev/payslip-web-v1/payslip-web/payslip-web:${COMMIT_SHA}'
+      - '--region'
+      - 'europe-west2'
+      - '--project'
+      - 'payslip-web-v1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--cpu'
+      - '2'
+      - '--memory'
+      - '1Gi'
+      - '--max-instances'
+      - '3'
+      - '--timeout'
+      - '900'
 
 images:
-  - europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}:$BUILD_ID
-
-options:
-  logging: CLOUD_LOGGING_ONLY
-timeout: 600s
+  - 'europe-west2-docker.pkg.dev/payslip-web-v1/payslip-web/payslip-web:${COMMIT_SHA}'
