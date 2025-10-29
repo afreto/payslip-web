@@ -1,5 +1,5 @@
-# Use a valid Playwright image tag (no "-jammy" suffix)
-FROM mcr.microsoft.com/playwright/python:latest
+# 1.25.2
+FROM mcr.microsoft.com/playwright/python:latest  
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
 	PYTHONUNBUFFERED=1 \
