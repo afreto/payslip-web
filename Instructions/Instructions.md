@@ -24,3 +24,15 @@ Project name - "payslip-web"
 Project ID - "payslip-web-476521"
 Project number - "819671955745"
 
+## Security notes (credentials handling)
+
+- The web wrapper writes supplied username/password into a temporary `credentials.env` file and passes its path to the grabber. While convenient, this writes secrets to disk (albeit a temporary directory) and may be undesirable in shared or multi-tenant environments.
+
+- Recommendations:
+	- Prefer in-memory/pipe-based approaches where the grabber accepts credentials via stdin or a secure IPC channel instead of a disk file.
+	- When deploying to Cloud Run or other shared infrastructure, use an authentication layer in front of the service (e.g., Cloud IAM, Cloud Endpoints) to restrict access.
+	- Avoid storing long-lived credentials in images or source control. Use Secret Manager (or equivalent) for any static secrets.
+	- If temporary files are unavoidable, ensure the runtime environment is ephemeral and access to tmp directories is tightly controlled.
+
+These notes are intentionally short; adapt them to your operational security standards before deploying to production.
+
