@@ -1,0 +1,47 @@
+substitutions:
+  # Customize if you want, or leave as defaults
+  _REGION: europe-west2
+  _SERVICE: payslip-web
+  _REPO: payslip-web            # Artifact Registry repo name
+  _IMG_NAME: payslip-web        # image name (no tag)
+  _PROJECT_ID: payslip-web-v1
+  _SERVICE_ACCOUNT: 44689628415-compute@developer.gserviceaccount.com
+
+# Build → Push → Deploy
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build image
+    args:
+      - build
+      - -t
+      - europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}:$SHORT_SHA
+      - -f
+      - dockerfile       # Dockerfile is at repo root
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push image
+    args:
+      - push
+      - europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}:$SHORT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Deploy to Cloud Run
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      # If you use a specific runtime SA, add:
+      - --service-account=${_SERVICE_ACCOUNT}
+
+images:
+  - europe-west2-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_IMG_NAME}:$SHORT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 600s
