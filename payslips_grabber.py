@@ -5,10 +5,11 @@ from dateutil import parser as dtparser
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
 # ── Config ────────────────────────────────────────────────────────────────────
-PORTAL_ROOT		= "https://my.corehr.com/pls/coreportal_boop/cp_por_public_main_page.display_login_page"
-BASE_DIR		= os.path.join(os.getcwd(), "boohoo_payslips")
-USER_DATA_DIR	= os.path.join(os.getcwd(), "corehr_user_data")
-CREDENTIALS_ENV	= os.path.join(os.getcwd(), "credentials.env")
+PORTAL_ROOT		= os.environ.get("PORTAL_ROOT", "https://my.corehr.com/pls/coreportal_boop/cp_por_public_main_page.display_login_page")
+# Allow overriding output and runtime dirs via environment (used by the web wrapper)
+BASE_DIR		= os.environ.get("BASE_DIR", os.path.join(os.getcwd(), "boohoo_payslips"))
+USER_DATA_DIR	= os.environ.get("USER_DATA_DIR", os.path.join(os.getcwd(), "corehr_user_data"))
+CREDENTIALS_ENV	= os.environ.get("CREDENTIALS_ENV", os.path.join(os.getcwd(), "credentials.env"))
 
 # Speed & behaviour
 FAST_MODE		= True

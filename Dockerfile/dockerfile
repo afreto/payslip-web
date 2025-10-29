@@ -21,6 +21,9 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+# Install Playwright browser dependencies and Chromium for headless operation
+RUN python -m playwright install --with-deps chromium
+
 # App source
 COPY . .
 
@@ -29,4 +32,4 @@ RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Cloud Run will send traffic to $PORT; gunicorn serves Flask/FastAPI with '<your_main_file>:<your_app_object>'
-CMD ["gunicorn", "main:application"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "main:application"]
