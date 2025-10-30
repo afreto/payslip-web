@@ -1,6 +1,6 @@
 # 1.25.2
 #FROM mcr.microsoft.com/playwright/python:latest  
-#FROM mcr.microsoft.com/playwright/python:v1.47.0
+FROM mcr.microsoft.com/playwright/python:v1.47.0
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
 	PYTHONUNBUFFERED=1 \
