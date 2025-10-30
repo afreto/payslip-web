@@ -8,6 +8,14 @@
 
 	function setStatus(msg) { status.textContent = msg || ''; }
 
+	function rid() {
+		// simple RFC4122-ish; fine for correlating logs
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+			const r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+			return v.toString(16);
+		});
+	}
+
 	openBtn.addEventListener('click', () => {
 		dlg.showModal();
 		setStatus('');
@@ -22,20 +30,30 @@
 		const password = formData.get('password')?.toString().trim();
 		if (!username || !password) return;
 
+		const requestId = rid();
+		console.debug('[UI] starting run', { requestId });
+
 		dlg.close();
 		setStatus('Starting… this may take a few minutes depending on how many payslips you have.');
 
 		try {
 			const resp = await fetch('/run', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'X-Request-ID': requestId
+				},
 				body: new URLSearchParams({ username, password }).toString()
 			});
 
+			const ridResp = resp.headers.get('X-Request-ID') || requestId;
+
 			if (!resp.ok) {
-				if (resp.status === 404) return setStatus('No payslips found or login failed.');
+				const text = await resp.text().catch(() => '');
+				console.error('[UI] run failed', { status: resp.status, rid: ridResp, body: text });
+				if (resp.status === 404) return setStatus(`No payslips found or login failed. Request-ID=${ridResp}`);
 				if (resp.status === 400) return setStatus('Username and password are required.');
-				return setStatus('Error while fetching payslips.');
+				return setStatus(`Error while fetching payslips. Request-ID=${ridResp}`);
 			}
 
 			const blob = await resp.blob();
@@ -47,8 +65,10 @@
 			a.click();
 			a.remove();
 			URL.revokeObjectURL(url);
+			console.debug('[UI] download started', { rid: ridResp });
 			setStatus('Download started.');
-		} catch {
+		} catch (err) {
+			console.error('[UI] network error', err);
 			setStatus('Network error.');
 		}
 	});
