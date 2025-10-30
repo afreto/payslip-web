@@ -14,4 +14,5 @@ COPY app.py scraper.py ./
 COPY templates ./templates
 COPY static ./static
 
-CMD ["bash", "-lc", "gunicorn -b 0.0.0.0:${PORT} -w 2 --threads 8 app:app"]
+#CMD ["bash", "-lc", "gunicorn -b 0.0.0.0:${PORT} -w 2 --threads 8 app:app"]
+CMD ["bash", "-lc", "gunicorn -b 0.0.0.0:${PORT} -w 2 --threads 8 --access-logfile - --error-logfile - --log-level debug --capture-output app:app"]
